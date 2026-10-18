@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annealer Firmware Updates</title>
+<style>
+  :root { --fg:#1d2329; --muted:#5f6b76; --bg:#f6f7f9; --card:#fff; --accent:#0b6bcb; --border:#dde2e7; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--fg); background:var(--bg); }
+  main { max-width:780px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  h2 { font-size:1.15rem; margin:0 0 12px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:18px; }
+  .version { font-size:2rem; font-weight:700; }
+  .meta { color:var(--muted); }
+  .notes { white-space:pre-wrap; margin:12px 0; }
+  .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px; font-weight:600; }
+  code, .hash { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.85rem; }
+  .hash { word-break:break-all; background:var(--bg); padding:6px 8px; border-radius:6px; display:block; margin-top:4px; }
+  table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  ol { padding-left:20px; margin:0; }
+  li { margin-bottom:6px; }
+  .err { color:#b00020; }
+  @media (max-width:560px) { .hide-sm { display:none; } .version { font-size:1.6rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Annealer Firmware Updates</h1>
+  <p class="sub">Over-the-air firmware for the ESP32 annealing-machine controller.</p>
+
+  <section class="card" id="latest">
+    <h2>Latest version</h2>
+    <div id="latest-body">Loading…</div>
+  </section>
+
+  <section class="card">
+    <h2>How to update</h2>
+    <ol>
+      <li>Connect the machine to WiFi via the <strong>Annealer-Setup</strong> hotspot: with the machine idle, hold <strong>MODE + TIME</strong> together for 3&nbsp;s (or type <code>wifi setup</code> in serial), join the <strong>Annealer-Setup</strong> WiFi on your phone and pick your network.</li>
+      <li>Then, with the machine idle, hold <strong>MODE</strong> (longer than 1.2&nbsp;s) or type <code>update</code> in serial.</li>
+      <li>The controller downloads the new firmware over HTTPS, checks its SHA-256, installs it and restarts. All outputs stay off during the update. If anything fails, it keeps running the current firmware.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Version history</h2>
+    <div id="history-body">Loading…</div>
+  </section>
+</main>
+<script>
+(function () {
+  "use strict";
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function kb(n) { return n ? (n / 1024).toFixed(0) + " kB" : ""; }
+  function load(name) {
+    return fetch(name + "?t=" + Date.now(), { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error(name + ": HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  load("firmware.json").then(function (m) {
+    document.getElementById("latest-body").innerHTML =
+      '<div class="version">v' + esc(m.version) + '</div>' +
+      '<div class="meta">Released ' + esc(m.released) + ' &middot; ' + esc(kb(m.size)) +
+      (m.auto ? ' &middot; auto-install' : '') + '</div>' +
+      '<p class="notes">' + esc(m.notes) + '</p>' +
+      '<p><a class="btn" href="' + esc(m.url) + '" download>Download annealer-' + esc(m.version) + '.bin</a></p>' +
+      '<div class="meta">SHA-256</div><code class="hash">' + esc(m.sha256) + '</code>';
+  }).catch(function (e) {
+    document.getElementById("latest-body").innerHTML = '<p class="err">Could not load firmware.json (' + esc(e.message) + ')</p>';
+  });
+
+  load("history.json").then(function (h) {
+    if (!Array.isArray(h) || h.length === 0) {
+      document.getElementById("history-body").textContent = "No releases yet.";
+      return;
+    }
+    var rows = h.map(function (r) {
+      return "<tr><td><a href=\"" + esc(r.url) + "\">v" + esc(r.version) + "</a></td>" +
+        "<td>" + esc(r.released) + "</td>" +
+        "<td>" + esc(r.notes) + "</td>" +
+        "<td class=\"hide-sm\"><code title=\"" + esc(r.sha256) + "\">" + esc(String(r.sha256 || "").slice(0, 12)) + "…</code></td></tr>";
+    }).join("");
+    document.getElementById("history-body").innerHTML =
+      "<table><thead><tr><th>Version</th><th>Released</th><th>Notes</th><th class=\"hide-sm\">SHA-256</th></tr></thead><tbody>" +
+      rows + "</tbody></table>";
+  }).catch(function (e) {
+    document.getElementById("history-body").innerHTML = '<p class="err">Could not load history.json (' + esc(e.message) + ')</p>';
+  });
+})();
+</script>
+</body>
+</html>
