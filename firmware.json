@@ -1,0 +1,9 @@
+{
+  "version": "1.1.0",
+  "url": "https://schalk42.github.io/annealer-updates/firmware/annealer-1.1.0.bin",
+  "sha256": "0e1bddf35b9d5beebbba842807c7643944c0c17ba140d3122f3a76b5ee242e07",
+  "size": 1271296,
+  "notes": "First OTA-capable release: WiFi setup portal (Annealer-Setup), secure HTTPS updates with SHA-256 check and automatic rollback. Machine behaviour and safety locks unchanged.",
+  "released": "2026-10-18",
+  "auto": false
+}
