@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.2",
+    "url": "https://schalk42.github.io/annealer-updates/firmware/annealer-1.1.2.bin",
+    "sha256": "df509dd7e1397daab7f61ed9dd78450a0126adb5bf981e1d70683ca00057b396",
+    "size": 1271680,
+    "notes": "Heater unlocked (SSR on heatsink). New button-only drop solenoid test: hold START+TIME 3 s while IDLE. Includes 1.1.1 millis() wrap fixes. Other behaviour unchanged.",
+    "released": "2026-10-23"
+  },
+  {
     "version": "1.1.0",
     "url": "https://schalk42.github.io/annealer-updates/firmware/annealer-1.1.0.bin",
     "sha256": "0e1bddf35b9d5beebbba842807c7643944c0c17ba140d3122f3a76b5ee242e07",
